@@ -5,3 +5,9 @@
 /CRUDBasico/bin/Debug/netcoreapp3.1
 /.vs
 /CRUDBasico/obj
+/CRUDBasico/bin/Release/netcoreapp3.1
+/CRUDBasico/Properties/PublishProfiles
+/Test/ServicioAtributos.FunctionalTests/bin/Debug/netcoreapp3.1
+/Test/ServicioAtributos.FunctionalTests/obj
+/Test/ServicioAtributos.UnitTest/bin/Debug/netcoreapp3.1
+/Test/ServicioAtributos.UnitTest/obj

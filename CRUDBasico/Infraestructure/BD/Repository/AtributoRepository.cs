@@ -4,16 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using CRUDBasico.Model;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace CRUDBasico.Infrastructure.BD.Repository
 {
-    class AtributoRepository : IAtributosRepository
+    public class AtributoRepository : BaseRepository<Atributo>, IAtributosRepository
     {
-        private readonly BDContext _context;
 
-        public AtributoRepository(BDContext context)
+        public AtributoRepository(BDContext context) : base(context)
         {
-            this._context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         async Task IAtributosRepository.AddAsync(Atributo atributo)
@@ -24,7 +23,7 @@ namespace CRUDBasico.Infrastructure.BD.Repository
 
         Atributo IAtributosRepository.GetElement(ISpecification<Atributo> specification)
         {
-            return this._context.Atributo.Where(specification.Criteria).FirstOrDefault();
+            return this._context.Atributo.AsNoTracking().Where(specification.Criteria).FirstOrDefault();
         }
 
         List<Atributo> IAtributosRepository.GetElements()
@@ -34,9 +33,20 @@ namespace CRUDBasico.Infrastructure.BD.Repository
 
         async Task<Atributo> IAtributosRepository.ModifyAsync(Atributo atributo)
         {
-            EntityEntry<Atributo> update = this._context.Atributo.Update(atributo);
-            await this._context.SaveChangesAsync();
-            return update.Entity;
+            try
+            {
+                EntityEntry<Atributo> update = this._context.Atributo.Update(atributo);
+                await this._context.SaveChangesAsync();
+                return update.Entity;
+
+            }
+            catch (Exception e)
+            {
+                var kk = e;
+                return null;
+            }
+
+           
         }
 
         async Task IAtributosRepository.RemoveAsync(Atributo atributo)

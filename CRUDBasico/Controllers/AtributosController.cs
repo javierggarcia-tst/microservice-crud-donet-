@@ -1,23 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
-using CRUDBasico.Infrastructure;
 using CRUDBasico.Infrastructure.BD.Repository;
 using CRUDBasico.Infrastructure.Specification;
 using CRUDBasico.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
 
 namespace CRUDBasico.Controllers
 {
     [ApiController]
-    [Route("api/v1/")]
+    [Route("api/v1/[controller]")]
     public class AtributosController : ControllerBase
     {
-       
+
         private readonly ILogger<AtributosController> _logger;
         private readonly IAtributosSpecification _specification;
         private readonly IAtributosRepository _repo;
@@ -62,8 +60,15 @@ namespace CRUDBasico.Controllers
         public IActionResult GetAtributoID(int atributoID)
         {
             Atributo atributo = _repo.GetElement(_specification.GetAtributoById(atributoID));
-            AtributoDto atributodto = _mapper.Map<Atributo, AtributoDto>(atributo);
-            return Ok(atributodto);
+            if (atributo != null && atributo.atributoId == atributoID)
+            {
+                AtributoDto atributodto = _mapper.Map<Atributo, AtributoDto>(atributo);
+                return Ok(atributodto);
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         /// <summary>
@@ -84,10 +89,18 @@ namespace CRUDBasico.Controllers
         [HttpPut]
         [ProducesResponseType(typeof(AtributoDto), (int)HttpStatusCode.Created)]
         public async Task<IActionResult> RegisterAtributo([FromBody]AtributoDto request)
-        {            
+        {
             Atributo tt = _mapper.Map<AtributoDto, Atributo>(request);
-            await _repo.AddAsync(tt);
-            return Created(string.Empty, request);
+            Atributo atributo = _repo.GetElement(_specification.GetAtributoById(request.id));
+            if (atributo == null)
+            {
+                await _repo.AddAsync(tt);
+                return Created(string.Empty, request);
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         /// <summary>
@@ -110,7 +123,8 @@ namespace CRUDBasico.Controllers
         public async Task<IActionResult> ModificarAtributo([FromBody]AtributoDto request)
         {
             Atributo atributoExistente = _mapper.Map<AtributoDto, Atributo>(request);
-            if (atributoExistente != null)
+            Atributo atributo = _repo.GetElement(_specification.GetAtributoById(request.id));
+            if (atributo != null)
             {
                 Atributo modificado = await _repo.ModifyAsync(atributoExistente);
                 AtributoDto resultado = _mapper.Map<Atributo, AtributoDto>(modificado);
@@ -134,7 +148,8 @@ namespace CRUDBasico.Controllers
         {
             //var atr = await _mediator.Send(new AtributosDeleteCommand(atributoID));
             Atributo atributoExistente = _repo.GetElement(_specification.GetAtributoById(atributoID));
-            if (atributoExistente != null) {
+            if (atributoExistente != null && atributoExistente.atributoId == atributoID)
+            {
                 AtributoDto atributoExistenteDto = _mapper.Map<AtributoDto>(atributoExistente);
                 await _repo.RemoveAsync(atributoExistente);
                 return Ok(atributoExistenteDto);

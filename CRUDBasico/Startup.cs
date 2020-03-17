@@ -16,13 +16,15 @@ using CRUDBasico.Infrastructure.BD.Repository;
 using AutoMapper;
 using CRUDBasico.Mapping;
 using CRUDBasico.Model;
+using CRUDBasico.Servicio.Kraken;
 
 namespace CRUDBasico
 {
     public class Startup
     {
         private readonly IConfiguration _configuration;
-       
+        private const string ConnectionKrakenString = "ConnectionKrakenString";
+
         public Startup(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -31,6 +33,8 @@ namespace CRUDBasico
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            string conexion = _configuration[ConnectionKrakenString];
+
             services.AddControllers();
 
             // Register the Swagger generator, defining 1 or more Swagger documents
@@ -44,6 +48,8 @@ namespace CRUDBasico
             IMapper mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);
 
+            /* Servicio Kraken */
+            services.AddSingleton<IKraken>(new Kraken(conexion));
 
             services
                .AddCustomMVC(_configuration)
